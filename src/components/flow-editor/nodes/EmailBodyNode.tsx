@@ -26,12 +26,16 @@ function EmailBodyNode({ data, selected }: NodeProps) {
         className="!w-2.5 !h-2.5 !bg-blue-400 !border-2 !border-white !shadow-sm"
       />
       {/* Icon block */}
-      <div className={`relative w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl shadow-sm ${
-        hasContent ? "bg-blue-500" : "bg-blue-300"
-      }`}>
+      <div
+        className={`relative w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl shadow-sm ${
+          hasContent ? "bg-blue-500" : "bg-blue-300"
+        }`}
+      >
         📝
         {!hasContent && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center text-[8px]">!</span>
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center text-[8px]">
+            !
+          </span>
         )}
       </div>
       {/* Label */}

@@ -26,17 +26,21 @@ function EmailConnectionNode({ data, selected }: NodeProps) {
         className="!w-2.5 !h-2.5 !bg-violet-400 !border-2 !border-white !shadow-sm"
       />
       {/* Icon block */}
-      <div className={`relative w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl shadow-sm ${
-        isConnected ? "bg-violet-500" : "bg-violet-300"
-      }`}>
+      <div
+        className={`relative w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl shadow-sm ${
+          isConnected ? "bg-violet-500" : "bg-violet-300"
+        }`}
+      >
         🔌
         {!isConnected && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center text-[8px]">!</span>
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center text-[8px]">
+            !
+          </span>
         )}
       </div>
       {/* Label */}
       <p className="text-[11px] font-semibold text-gray-600 text-center leading-tight w-full truncate">
-        {isConnected ? (d.credentialName || "Gmail") : "Gmail"}
+        {isConnected ? d.credentialName || "Gmail" : "Gmail"}
       </p>
       <Handle
         type="source"

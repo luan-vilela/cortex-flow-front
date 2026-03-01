@@ -75,7 +75,8 @@ export default function NodeConfigModal({
         {/* Footer */}
         <div className="px-5 py-3 border-t border-gray-100 shrink-0 bg-gray-50 rounded-b-2xl">
           <p className="text-xs text-gray-400 text-center">
-            As alterações são aplicadas automaticamente · Salve o flow para persistir
+            As alterações são aplicadas automaticamente · Salve o flow para
+            persistir
           </p>
         </div>
       </div>
