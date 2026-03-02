@@ -17,18 +17,17 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { useFlowEditor } from "@/hooks/useFlowEditor";
-import TriggerNode from "@/components/flow-editor/nodes/TriggerNode";
-import EmailConnectionNode from "@/components/flow-editor/nodes/EmailConnectionNode";
-import EmailBodyNode from "@/components/flow-editor/nodes/EmailBodyNode";
-import SendEmailNode from "@/components/flow-editor/nodes/SendEmailNode";
+import { useExportFlow, useImportIntoFlow } from "@/hooks/useFlowExportImport";
 import NodeConfigModal from "@/components/flow-editor/NodeConfigModal";
 import NodePalette from "@/components/flow-editor/NodePalette";
+import DeletableEdge from "@/components/flow-editor/DeletableEdge";
+import { NODE_TYPES_MAP } from "@/lib/node-registry";
+import { toast } from "sonner";
 
-const NODE_TYPES = {
-  triggerNode: TriggerNode,
-  emailConnectionNode: EmailConnectionNode,
-  emailBodyNode: EmailBodyNode,
-  sendEmailNode: SendEmailNode,
+const NODE_TYPES = { ...NODE_TYPES_MAP };
+
+const EDGE_TYPES = {
+  default: DeletableEdge,
 };
 
 // ── Inner component (needs to be inside ReactFlowProvider to use useReactFlow) ──
@@ -44,6 +43,7 @@ function EditorContent({
   const [showTestInput, setShowTestInput] = useState(false);
   const [testEmail, setTestEmail] = useState("");
   const testInputRef = useRef<HTMLInputElement>(null);
+  const importFileRef = useRef<HTMLInputElement>(null);
 
   const {
     flow,
@@ -61,7 +61,11 @@ function EditorContent({
     isTesting,
     testResult,
     clearTestResult,
+    replaceNodesAndSave,
   } = useFlowEditor(workspaceId, flowId);
+
+  const { exportFlow, isExporting } = useExportFlow(workspaceId);
+  const { importIntoFlow, isImporting } = useImportIntoFlow();
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -94,6 +98,13 @@ function EditorContent({
       );
     },
     [updateNodeData],
+  );
+
+  const handleDeleteNode = useCallback(
+    (id: string) => {
+      onNodesChange([{ type: "remove", id }]);
+    },
+    [onNodesChange],
   );
 
   // ── Drag-and-drop from palette ──────────────────────────────────────────────
@@ -179,7 +190,54 @@ function EditorContent({
           </span>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          {/* ── Botão Testar com dropdown de email ── */}
+          {/* ── Botão Exportar ── */}
+          <button
+            onClick={() => flow && exportFlow(flow.id, flow.name)}
+            disabled={isExporting || !flow}
+            title="Exportar flow como JSON"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            {isExporting ? (
+              <span className="animate-spin">⏳</span>
+            ) : (
+              <span>⬇️</span>
+            )}
+            Exportar
+          </button>
+
+          {/* ── Botão Importar ── */}
+          <input
+            ref={importFileRef}
+            type="file"
+            accept=".json,.cortexflow.json"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              // Reset input so same file can be re-selected
+              e.target.value = "";
+              if (
+                !confirm(
+                  "Isso irá substituir todos os nodes e edges do flow atual. Deseja continuar?",
+                )
+              )
+                return;
+              await importIntoFlow(file, replaceNodesAndSave);
+            }}
+          />
+          <button
+            onClick={() => importFileRef.current?.click()}
+            disabled={isImporting}
+            title="Importar flow de arquivo JSON"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            {isImporting ? (
+              <span className="animate-spin">⏳</span>
+            ) : (
+              <span>⬆️</span>
+            )}
+            Importar
+          </button>
           <div className="relative">
             <button
               onClick={() => {
@@ -296,7 +354,7 @@ function EditorContent({
             ) : (
               <div>
                 <p className="font-medium">Erro na execução</p>
-                <p className="mt-0.5 opacity-90 break-words">
+                <p className="mt-0.5 opacity-90 wrap-break-word">
                   {testResult.error}
                 </p>
                 {testResult.enableUrl && (
@@ -329,6 +387,7 @@ function EditorContent({
             nodes={nodes}
             edges={edges}
             nodeTypes={NODE_TYPES}
+            edgeTypes={EDGE_TYPES}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -336,6 +395,10 @@ function EditorContent({
             onPaneClick={onPaneClick}
             onDragOver={onDragOver}
             onDrop={onDrop}
+            deleteKeyCode={["Backspace", "Delete"]}
+            selectionOnDrag
+            panOnDrag={[1, 2]}
+            panOnScroll
             fitView
             fitViewOptions={{ padding: 0.3 }}
             defaultEdgeOptions={{
@@ -352,12 +415,12 @@ function EditorContent({
             />
             <Controls
               position="bottom-left"
-              className="!border-gray-200 !shadow-sm"
+              className="border-gray-200! shadow-sm!"
             />
             <MiniMap
               position="bottom-right"
               nodeStrokeWidth={3}
-              className="!border-gray-200 !shadow-sm !rounded-xl"
+              className="border-gray-200! shadow-sm! rounded-xl!"
             />
           </ReactFlow>
         </div>
@@ -371,6 +434,7 @@ function EditorContent({
         node={selectedNode}
         onClose={() => setSelectedNode(null)}
         onUpdateData={handleUpdateNodeData}
+        onDeleteNode={handleDeleteNode}
         workspaceId={workspaceId}
         flowId={flowId}
       />

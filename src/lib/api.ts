@@ -138,6 +138,24 @@ export const flowsApi = {
     api
       .get(`/workspaces/${workspaceId}/flows/${flowId}/webhook-info`)
       .then((r) => r.data),
+  exportFlow: (workspaceId: string, flowId: string) =>
+    api
+      .get(`/workspaces/${workspaceId}/flows/${flowId}/export`)
+      .then(
+        (r) =>
+          r.data as {
+            cortexFlowVersion: string;
+            exportedAt: string;
+            flow: object;
+          },
+      ),
+  importFlow: (
+    workspaceId: string,
+    data: { cortexFlowVersion: string; flow: object },
+  ) =>
+    api
+      .post(`/workspaces/${workspaceId}/flows/import`, data)
+      .then((r) => r.data),
 };
 
 // ── Executions ───────────────────────────────────────────────────────────────

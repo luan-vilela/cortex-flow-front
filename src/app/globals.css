@@ -49,6 +49,12 @@
   border-color: hsl(var(--border));
 }
 
+/* ReactFlow: allow nodes to visually overflow their bounding box
+   (needed for the connector line + "+" button extending to the right) */
+.react-flow__node {
+  overflow: visible !important;
+}
+
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));

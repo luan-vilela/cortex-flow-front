@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,6 +12,7 @@ import {
   useExecuteFlow,
   useDuplicateFlow,
 } from "@/hooks/useFlows";
+import { useExportFlow, useImportFlow } from "@/hooks/useFlowExportImport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,6 +27,8 @@ import {
   GitBranch,
   ExternalLink,
   MoreHorizontal,
+  Upload,
+  Download,
 } from "lucide-react";
 import type { Flow, FlowStatus, FlowTriggerType } from "@/types";
 import { cn } from "@/lib/utils";
@@ -59,6 +62,7 @@ export default function FlowsPage({
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
+  const importFileRef = useRef<HTMLInputElement>(null);
 
   const { data: flows, isLoading } = useFlows(workspaceId, {
     search: search || undefined,
@@ -69,6 +73,8 @@ export default function FlowsPage({
   const deleteFlow = useDeleteFlow(workspaceId);
   const executeFlow = useExecuteFlow(workspaceId);
   const duplicateFlow = useDuplicateFlow(workspaceId);
+  const { exportFlow, isExporting } = useExportFlow(workspaceId);
+  const { importFlow, isImporting } = useImportFlow(workspaceId);
 
   const {
     register,
@@ -141,6 +147,38 @@ export default function FlowsPage({
           >
             Usar Template
           </Link>
+
+          {/* ── Importar flow ── */}
+          <input
+            ref={importFileRef}
+            type="file"
+            accept=".json,.cortexflow.json"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              e.target.value = "";
+              const newFlow = await importFlow(file);
+              if (newFlow) {
+                router.push(
+                  `/workspaces/${workspaceId}/flows/${newFlow.id}/editor`,
+                );
+              }
+            }}
+          />
+          <button
+            onClick={() => importFileRef.current?.click()}
+            disabled={isImporting}
+            className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white border border-gray-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {isImporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4" />
+            )}
+            Importar
+          </button>
+
           <button
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
@@ -328,6 +366,14 @@ export default function FlowsPage({
                   className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-blue-400 transition-colors"
                 >
                   <Copy className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => exportFlow(flow.id, flow.name)}
+                  disabled={isExporting}
+                  title="Exportar"
+                  className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-emerald-400 disabled:opacity-40 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(flow)}

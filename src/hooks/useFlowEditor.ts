@@ -24,6 +24,8 @@ interface UseFlowEditorReturn {
   onEdgesChange: (changes: EdgeChange[]) => void;
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
   saveNodes: () => void;
+  /** Replace all nodes+edges and immediately persist (used by import). */
+  replaceNodesAndSave: (nodes: object[], edges: object[]) => Promise<void>;
   isSaving: boolean;
   publishFlow: () => void;
   isPublishing: boolean;
@@ -180,6 +182,17 @@ export function useFlowEditor(
     onEdgesChange: onEdgesChangeTracked,
     updateNodeData,
     saveNodes: saveNodesMutation.mutate,
+    replaceNodesAndSave: async (newNodes: object[], newEdges: object[]) => {
+      setNodes(newNodes as unknown as Node[]);
+      setEdges(newEdges as unknown as Edge[]);
+      isDirty.current = false;
+      // Save directly with the incoming data (bypasses stale closure in mutationFn)
+      const updatedFlow = await flowsApi.saveNodes(workspaceId, flowId, {
+        nodes: newNodes,
+        edges: newEdges,
+      });
+      qc.setQueryData(flowKeys.detail(workspaceId, flowId), updatedFlow);
+    },
     isSaving: saveNodesMutation.isPending,
     publishFlow: publishMutation.mutate,
     isPublishing: publishMutation.isPending,
