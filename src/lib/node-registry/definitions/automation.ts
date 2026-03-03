@@ -2,6 +2,8 @@ import type { NodeDefinition } from "../types";
 import { CATEGORIES, PROVIDERS, PRODUCTS } from "../taxonomy";
 import HttpRequestNode from "@/components/flow-editor/nodes/automation/native/HttpRequestNode";
 import HttpResponseNode from "@/components/flow-editor/nodes/automation/native/HttpResponseNode";
+import IfNode from "@/components/flow-editor/nodes/automation/native/IfNode";
+import WaitNode from "@/components/flow-editor/nodes/automation/native/WaitNode";
 
 export const AUTOMATION_NODES: NodeDefinition[] = [
   {
@@ -29,5 +31,31 @@ export const AUTOMATION_NODES: NodeDefinition[] = [
     variant: "end",
     color: CATEGORIES.AUTOMATION.color,
     component: HttpResponseNode,
+  },
+  {
+    type: "ifNode",
+    label: "If / Condição",
+    icon: "🔀",
+    description:
+      "Avalia uma condição e direciona o fluxo para dois caminhos: verdadeiro (sim) ou falso (não). Suporta operadores de comparação e variáveis dinâmicas.",
+    category: CATEGORIES.AUTOMATION.id,
+    provider: PROVIDERS.NATIVE.id,
+    product: PRODUCTS.CONDITION,
+    variant: "work",
+    color: CATEGORIES.AUTOMATION.color,
+    component: IfNode,
+  },
+  {
+    type: "waitNode",
+    label: "Wait / Aguardar",
+    icon: "⏳",
+    description:
+      "Pausa o fluxo por uma quantidade configurável de segundos antes de prosseguir para o próximo nó.",
+    category: CATEGORIES.AUTOMATION.id,
+    provider: PROVIDERS.NATIVE.id,
+    product: PRODUCTS.DELAY,
+    variant: "work",
+    color: CATEGORIES.AUTOMATION.color,
+    component: WaitNode,
   },
 ];

@@ -8,6 +8,10 @@ import HttpRequestNodeConfig from "./nodes/automation/native/HttpRequestNodeConf
 import type { HttpRequestNodeData } from "./nodes/automation/native/HttpRequestNode";
 import HttpResponseNodeConfig from "./nodes/automation/native/HttpResponseNodeConfig";
 import type { HttpResponseNodeData } from "./nodes/automation/native/HttpResponseNode";
+import IfNodeConfig from "./nodes/automation/native/IfNodeConfig";
+import type { IfNodeData } from "./nodes/automation/native/IfNode";
+import WaitNodeConfig from "./nodes/automation/native/WaitNodeConfig";
+import type { WaitNodeData } from "./nodes/automation/native/WaitNode";
 import { getNodeDef, CATEGORIES } from "@/lib/node-registry";
 import type { FlowNodeColor } from "./FlowNode";
 
@@ -125,6 +129,24 @@ export default function NodeConfigPanel({
             workspaceId={workspaceId}
             flowId={flowId}
             data={data as HttpResponseNodeData}
+            onChange={handleChange}
+          />
+        )}
+        {node.type === "ifNode" && (
+          <IfNodeConfig
+            nodeId={node.id}
+            workspaceId={workspaceId}
+            flowId={flowId}
+            data={data as IfNodeData}
+            onChange={handleChange}
+          />
+        )}
+        {node.type === "waitNode" && (
+          <WaitNodeConfig
+            nodeId={node.id}
+            workspaceId={workspaceId}
+            flowId={flowId}
+            data={data as WaitNodeData}
             onChange={handleChange}
           />
         )}
